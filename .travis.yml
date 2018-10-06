@@ -1,0 +1,29 @@
+language: c
+
+matrix:
+  include:
+  - os: linux
+    dist: trusty
+    sudo: required
+
+script:
+  - mkdir -p upload/${TRAVIS_BUILD_NUMBER}
+  - echo ${TRAVIS_BUILD_NUMBER} > upload/latest
+  - "./setup.sh"
+  - "./build.sh -a"
+  - cp rootfs.tar.gz upload/${TRAVIS_BUILD_NUMBER}/
+  - "./build.sh -i"
+  - cp i386.rootfs.tar.gz upload/${TRAVIS_BUILD_NUMBER}
+
+deploy:
+  on:
+    branch: chip/stable
+  provider: s3
+  access_key_id: "${AWS_ACCESS_KEY_ID}"
+  secret_access_key: "${AWS_SECRET_ACCESS_KEY}"
+  bucket: "opensource.nextthing.co"
+  skip_cleanup: true
+  acl: public_read
+  region: us-west-2
+  local-dir: upload
+  upload-dir: artifacts-travis/armhf-debootstrap

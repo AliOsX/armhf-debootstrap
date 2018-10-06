@@ -1,0 +1,23 @@
+version: 0.1
+
+phases:
+  pre_build:
+    commands:
+      - mkdir armhf-debootstrap
+      - echo ${CODEBUILD_BUILD_ID} | sed 's/.*://g' > latest
+      - ./setup.sh
+      - sudo apt-get install -y binfmt-support
+  build:
+    commands:
+      - ./build.sh -i
+      - update-binfmts --display qemu-arm
+      - ./build.sh -a
+      - tar -zcf $(cat latest).tar.gz rootfs.tar.gz i386.tar.gz
+  post_build:
+    commands:
+      - cp latest armhf-debootstrap
+      - mv $(cat latest).tar.gz armhf-debootstrap
+
+artifacts:
+  files:
+    - armhf-debootstrap/**/*
